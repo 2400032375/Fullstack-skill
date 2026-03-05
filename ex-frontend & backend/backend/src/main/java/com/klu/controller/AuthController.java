@@ -2,19 +2,17 @@ package com.klu.controller;
 
 import com.klu.model.User;
 import com.klu.service.UserService;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Objects;
-
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(originPatterns = "http://localhost:*")
 public class AuthController {
 
     private final UserService userService;
@@ -24,16 +22,29 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public User register(@RequestBody @NonNull User user) {
-        return userService.registerUser(user);
+    public ResponseEntity<?> register(@RequestBody User user) {
+        if (user == null || isBlank(user.getName()) || isBlank(user.getEmail()) || isBlank(user.getPassword())) {
+            return ResponseEntity.badRequest().body("Name, email and password are required");
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerUser(user));
     }
 
     @PostMapping("/login")
-    @Nullable
-    public User login(@RequestBody @NonNull User user) {
-        return userService.login(
-            Objects.requireNonNull(user.getEmail(), "Email is required"),
-            Objects.requireNonNull(user.getPassword(), "Password is required")
-        );
+    public ResponseEntity<?> login(@RequestBody User user) {
+        if (user == null || isBlank(user.getEmail()) || isBlank(user.getPassword())) {
+            return ResponseEntity.badRequest().body("Email and password are required");
+        }
+
+        User loggedInUser = userService.login(user.getEmail(), user.getPassword());
+        if (loggedInUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+        }
+
+        return ResponseEntity.ok(loggedInUser);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

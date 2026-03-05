@@ -35,6 +35,15 @@ function Login() {
       });
   };
 
+  const goToDemo = (role) => {
+    localStorage.setItem("role", role);
+    if (role === "ADMIN") {
+      navigate("/admin-dashboard");
+      return;
+    }
+    navigate("/customer-dashboard");
+  };
+
   return (
     <div className="container-fluid vh-100">
       <div className="row h-100">
@@ -61,6 +70,26 @@ function Login() {
             <button className="btn btn-primary w-100" onClick={handleLogin}>
               Login
             </button>
+
+            <div className="mt-3">
+              <p className="text-muted small mb-2 text-center">Demo Access</p>
+              <div className="d-grid gap-2">
+                <button
+                  type="button"
+                  className="btn btn-outline-dark"
+                  onClick={() => goToDemo("ADMIN")}
+                >
+                  Demo Admin Account
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-success"
+                  onClick={() => goToDemo("CUSTOMER")}
+                >
+                  Demo Customer Account
+                </button>
+              </div>
+            </div>
 
             <p className="mt-3 text-center">
               Don't have an account?{" "}
